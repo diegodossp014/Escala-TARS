@@ -1,0 +1,61 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Escala TARS - Gestão de Plantões</title>
+    <link rel="stylesheet" href="estilo.css">
+    <link href="https://fonts.googleapis.com/css2?family=Open+Sans:wght@400;600;700&display=swap" rel="stylesheet">
+</head>
+<body>
+
+    <div id="loginOverlay" class="login-overlay">
+        <div class="login-box">
+            <div class="logo-text">ESCALA <strong>TARS</strong></div>
+            <h3>Acesso Restrito</h3>
+            <input type="text" id="usuario" placeholder="Usuário">
+            <input type="password" id="senha" placeholder="Senha" onkeydown="verificarEnter(event)">
+            <button onclick="realizarLogin()">Entrar</button>
+            <p id="loginErro" style="color: #ff6b6b; display: none; margin-top: 10px; font-size: 12px; font-weight: bold;">Credenciais incorretas!</p>
+        </div>
+    </div>
+
+    <div id="conteudoEscala" style="display: none;">
+        <nav class="navbar">
+            <div class="logo-text">ESCALA <strong>TARS</strong></div>
+            <div class="nav-actions">
+                <button class="btn-add" onclick="adicionarFuncionario()">+ Novo Profissional</button>
+                <button class="btn-save" onclick="botaoSalvarManual()">💾 Salvar Escala</button>
+                <button class="btn-clear" onclick="limparEscalaMes()">🗑️ Limpar Marcações</button>
+                <button class="btn-logout" onclick="logout()">Sair</button>
+            </div>
+        </nav>
+
+        <div class="filter-bar">
+            <div class="month-navigation">
+                <span class="nav-arrow" onclick="mudarMes(-1)">❮</span>
+                <span id="displayMesAno" class="current-month">Janeiro, 2026</span>
+                <span class="nav-arrow" onclick="mudarMes(1)">❯</span>
+            </div>
+        </div>
+
+        <div class="table-container">
+            <table>
+                <thead>
+                    <tr class="header-main-title">
+                        <th colspan="7">ESCALA CDI</th>
+                        <th id="headerEscalaMensal" colspan="31">Escala Mensal</th>
+                        <th></th>
+                    </tr>
+                    <tr id="daysRow" class="header-days">
+                        </tr>
+                </thead>
+                <tbody id="tableBody">
+                    </tbody>
+            </table>
+        </div>
+    </div>
+
+    <script src="guardar.js"></script>
+</body>
+</html>

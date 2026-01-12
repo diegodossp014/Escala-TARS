@@ -1,0 +1,40 @@
+:root {
+    --tars-blue: #004a8d;
+    --tars-green: #00a88e;
+    --bg-gray: #f4f7f9;
+    --escala-red: #ff6b6b;
+    --escala-orange: #f59e0b;
+}
+
+* { box-sizing: border-box; margin: 0; padding: 0; }
+body { font-family: 'Open Sans', sans-serif; background-color: var(--bg-gray); }
+
+.login-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: var(--bg-gray); display: flex; align-items: center; justify-content: center; z-index: 1000; }
+.login-box { background: #fff; padding: 30px; border-radius: 8px; box-shadow: 0 4px 15px rgba(0,0,0,0.1); text-align: center; width: 300px; }
+.login-box input { width: 100%; padding: 10px; margin-bottom: 10px; border: 1px solid #ddd; border-radius: 4px; }
+.login-box button { width: 100%; padding: 10px; background: var(--tars-green); color: white; border: none; border-radius: 4px; cursor: pointer; font-weight: bold; }
+
+.navbar { background: #fff; display: flex; align-items: center; padding: 10px 20px; border-bottom: 1px solid #e2e8f0; justify-content: space-between; }
+.nav-actions { display: flex; flex-direction: column; gap: 4px; align-items: flex-end; }
+.logo-text strong { color: var(--tars-green); }
+
+.filter-bar { display: flex; background: #fff; padding: 15px; border-bottom: 1px solid #e2e8f0; justify-content: space-between; align-items: center; }
+.month-navigation { display: flex; align-items: center; gap: 15px; }
+.nav-arrow { cursor: pointer; font-weight: bold; font-size: 18px; color: var(--tars-blue); user-select: none; }
+.current-month { font-size: 16px; font-weight: 600; color: var(--tars-blue); min-width: 140px; text-align: center; }
+
+.table-container { background: #fff; margin: 20px; border: 1px solid #000; overflow-x: auto; }
+table { width: 100%; border-collapse: collapse; min-width: max-content; }
+th, td { border: 1px solid #000; text-align: center; font-size: 10px; padding: 4px; height: 32px; white-space: nowrap; }
+
+.row-turno-header td { background: #cccccc !important; font-weight: bold; text-transform: uppercase; color: #000; font-size: 12px; }
+.row-count td { background: #f8fafc; font-weight: bold; color: #1e293b; font-size: 9px; }
+
+.cell-day-alert { background-color: var(--escala-red) !important; color: white !important; }
+.weekend-cell { background-color: #d1d5db !important; }
+
+.btn-add { background: var(--tars-green); color: white; border: none; padding: 5px 10px; border-radius: 4px; cursor: pointer; font-weight: bold; }
+.btn-save { background: var(--tars-blue); color: white; border: none; padding: 5px 10px; border-radius: 4px; cursor: pointer; font-weight: bold; }
+.btn-clear { background: var(--escala-orange); color: white; border: none; padding: 5px 10px; border-radius: 4px; cursor: pointer; font-weight: bold; }
+.btn-logout { background: #64748b; color: white; border: none; padding: 2px 8px; border-radius: 4px; cursor: pointer; font-size: 10px; }
+.btn-edit-dots { cursor: pointer; color: #3182ce; font-size: 14px; margin-left: 4px; }
