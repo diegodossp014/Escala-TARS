@@ -1,6 +1,43 @@
+// 1. CONFIGURAÇÃO DO FIREBASE (Extraído da sua imagem)
+const firebaseConfig = {
+    apiKey: "AIzaSyCW84493EhzeIRXpiu9ZYrGkt1wD5UY0yg",
+    authDomain: "escala-tars.firebaseapp.com",
+    projectId: "escala-tars",
+    storageBucket: "escala-tars.firebasestorage.app",
+    messagingSenderId: "766049652867",
+    appId: "1:766049652867:web:d3aa722a44f39eb1a88bb6",
+    measurementId: "G-96MEYHXJ4C"
+};
+
+// Inicialização
+firebase.initializeApp(firebaseConfig);
+const db = firebase.firestore();
+
 const USUARIO_MESTRE = "admin";
 const SENHA_MESTRE = "1234";
 
+let colaboradores = []; // Agora inicia vazio e carrega do banco
+let dataAtual = new Date(2026, 0, 1); 
+
+const tableBody = document.getElementById('tableBody');
+const daysRow = document.getElementById('daysRow');
+const displayMesAno = document.getElementById('displayMesAno');
+
+const CONFIG_TURNOS = [
+    { nome: "MANHÃ SUP", temContador: false },
+    { nome: "MANHÃ ENF", temContador: true },
+    { nome: "MANHÃ TEC", temContador: true },
+    { nome: "TARDE ENF", temContador: true },
+    { nome: "TARDE TEC", temContador: true },
+    { nome: "NOTURNO A", temContador: false },
+    { nome: "NOTURNO A TEC", temContador: true },
+    { nome: "NOTURNO B", temContador: false },
+    { nome: "NOTURNO B TEC", temContador: true },
+    { nome: "AUXILIAR ADM", temContador: false },
+    { nome: "LICENÇA MÉDICA", temContador: false }
+];
+
+// 2. FUNÇÕES DE LOGIN E INICIALIZAÇÃO
 window.onload = function() {
     if (sessionStorage.getItem("logado") === "true") exibirEscala();
 };
@@ -16,50 +53,44 @@ function realizarLogin() {
     } else { document.getElementById("loginErro").style.display = "block"; }
 }
 
+// 3. CONEXÃO EM TEMPO REAL (Substitui o carregar do localStorage)
 function exibirEscala() {
     document.getElementById("loginOverlay").style.display = "none";
     document.getElementById("conteudoEscala").style.display = "block";
-    atualizarTabela();
+    
+    // Escuta o banco de dados: se mudar no Firebase, atualiza a tela na hora
+    db.collection("escalas").doc("geral").onSnapshot((doc) => {
+        if (doc.exists) {
+            colaboradores = doc.data().colaboradores || [];
+        }
+        atualizarTabela();
+    });
+}
+
+// 4. FUNÇÃO DE SALVAR NA NUVEM (Substitui o salvarNoNavegador)
+async function salvarNoFirebase() {
+    try {
+        await db.collection("escalas").doc("geral").set({ colaboradores });
+        console.log("Sincronizado com Firebase");
+    } catch (e) {
+        console.error("Erro ao salvar no Firebase: ", e);
+    }
 }
 
 function logout() { sessionStorage.removeItem("logado"); location.reload(); }
-
-const tableBody = document.getElementById('tableBody');
-const daysRow = document.getElementById('daysRow');
-const displayMesAno = document.getElementById('displayMesAno');
-
-let colaboradores = JSON.parse(localStorage.getItem('escala_tars_save')) || [];
-let dataAtual = new Date(2026, 0, 1); 
-
-// Definição exata dos turnos e se possuem contador
-const CONFIG_TURNOS = [
-    { nome: "MANHÃ SUP", temContador: false },
-    { nome: "MANHÃ ENF", temContador: true },
-    { nome: "MANHÃ TEC", temContador: true },
-    { nome: "TARDE ENF", temContador: true },
-    { nome: "TARDE TEC", temContador: true },
-    { nome: "NOTURNO A", temContador: false },
-    { nome: "NOTURNO A TEC", temContador: true },
-    { nome: "NOTURNO B", temContador: false },
-    { nome: "NOTURNO B TEC", temContador: true },
-    { nome: "AUXILIAR ADM", temContador: false },
-    { nome: "LICENÇA MÉDICA", temContador: false }
-];
-
-function salvarNoNavegador() { localStorage.setItem('escala_tars_save', JSON.stringify(colaboradores)); }
-
-function botaoSalvarManual() { salvarNoNavegador(); alert("Escala TARS salva com sucesso!"); }
+function botaoSalvarManual() { salvarNoFirebase(); alert("Escala TARS sincronizada na nuvem!"); }
 
 function limparEscalaMes() {
     if (confirm("Limpar todas as marcações deste mês?")) {
         const ano = dataAtual.getFullYear(), mes = dataAtual.getMonth();
         colaboradores.forEach(p => { if (p.escala?.[ano]?.[mes]) p.escala[ano][mes] = {}; });
-        salvarNoNavegador(); atualizarTabela();
+        salvarNoFirebase(); // Alterado de salvarNoNavegador
     }
 }
 
 function mudarMes(delta) { dataAtual.setMonth(dataAtual.getMonth() + delta); atualizarTabela(); }
 
+// 5. RENDERIZAÇÃO DA TABELA (Mantida igual ao seu original)
 function atualizarTabela() {
     if (sessionStorage.getItem("logado") !== "true") return;
     const ano = dataAtual.getFullYear(), mes = dataAtual.getMonth();
@@ -82,14 +113,12 @@ function atualizarTabela() {
 
 function renderizarTurno(turnoObj, ano, mes, ultimoDia) {
     const lista = colaboradores.filter(c => c.turno === turnoObj.nome);
-    
     const trTitle = document.createElement('tr');
     trTitle.className = 'row-turno-header';
     trTitle.innerHTML = `<td colspan="${ultimoDia + 8}" style="text-align:center;">${turnoObj.nome}</td>`;
     tableBody.appendChild(trTitle);
 
     if (lista.length === 0) return;
-
     let contagemPlatao = new Array(ultimoDia + 1).fill(0);
 
     lista.forEach(func => {
@@ -103,7 +132,6 @@ function renderizarTurno(turnoObj, ano, mes, ultimoDia) {
             diasInfo[d] = { valor, alert: false };
         }
 
-        // Regra de alerta de 7 dias
         let diasSeguidos = 0;
         for (let d = 1; d <= ultimoDia; d++) {
             if (diasInfo[d].valor === "") {
@@ -135,6 +163,7 @@ function renderizarTurno(turnoObj, ano, mes, ultimoDia) {
     }
 }
 
+// 6. FUNÇÕES DE EDIÇÃO (Agora chamam salvarNoFirebase)
 function digitarDia(fIdx, dia) {
     const ano = dataAtual.getFullYear(), mes = dataAtual.getMonth();
     const novo = prompt(`Dia ${dia} - Marcação (Ex: F, FH, LM, T, M):`, colaboradores[fIdx].escala?.[ano]?.[mes]?.[dia] || '');
@@ -143,14 +172,13 @@ function digitarDia(fIdx, dia) {
         if (!colaboradores[fIdx].escala[ano]) colaboradores[fIdx].escala[ano] = {};
         if (!colaboradores[fIdx].escala[ano][mes]) colaboradores[fIdx].escala[ano][mes] = {};
         colaboradores[fIdx].escala[ano][mes][dia] = novo.toUpperCase().trim();
-        salvarNoNavegador(); atualizarTabela();
+        salvarNoFirebase(); // Alterado
     }
 }
 
 function adicionarFuncionario() {
     const nome = prompt("Nome completo:");
     if (!nome) return;
-    
     let menuTurnos = "Selecione o Turno:\n";
     CONFIG_TURNOS.forEach((t, i) => menuTurnos += `${i+1} - ${t.nome}\n`);
     const escolha = prompt(menuTurnos);
@@ -163,7 +191,7 @@ function adicionarFuncionario() {
         horario: prompt("Horário:"), ultimaFolga: prompt("Última Folga:"),
         escala: {}
     });
-    salvarNoNavegador(); atualizarTabela();
+    salvarNoFirebase(); // Alterado
 }
 
 function abrirMenuEdicao(idx) {
@@ -181,10 +209,9 @@ function abrirMenuEdicao(idx) {
         p.cargo = prompt("Cargo:", p.cargo);
         p.horario = prompt("Horário:", p.horario);
         p.ultimaFolga = prompt("Última Folga:", p.ultimaFolga);
-        salvarNoNavegador();
+        salvarNoFirebase(); // Alterado
     } else if (op === "2") {
         if(confirm(`Remover ${p.nome}?`)) colaboradores.splice(idx, 1);
-        salvarNoNavegador();
+        salvarNoFirebase(); // Alterado
     }
-    atualizarTabela();
 }
